@@ -131,13 +131,6 @@ class Client extends Base {
 
     var soapVersion = this.wsdl.options.forceSoapVersion || operation.soapVersion;
 
-    if (soapVersion === '1.2') {
-      headers['Content-Type'] = 'application/soap+xml; charset=utf-8';
-      soapNsURI = 'http://www.w3.org/2003/05/soap-envelope';
-    }
-
-    debug('client request. soapNsURI: %s soapNsPrefix: %s ', soapNsURI, soapNsPrefix);
-
     if (this.SOAPAction) {
       soapAction = this.SOAPAction;
     } else if (operation.soapAction != null) {
@@ -146,11 +139,18 @@ class Client extends Base {
       soapAction = ((ns.lastIndexOf("/") !== ns.length - 1) ? ns + "/" : ns) + name;
     }
 
+    debug('client request. soapAction: %s', soapAction);
+
+    if (soapVersion === '1.2') {
+      headers['Content-Type'] = 'application/soap+xml; charset=utf-8; action="' + soapAction + '"';
+      soapNsURI = 'http://www.w3.org/2003/05/soap-envelope';
+    }
+
+    debug('client request. soapNsURI: %s soapNsPrefix: %s ', soapNsURI, soapNsPrefix);
+
     if (soapVersion !== '1.2' || operation.soapActionRequired) {
       headers.SOAPAction = '"' + soapAction + '"';
     }
-
-    debug('client request. soapAction: %s', soapAction);
 
     options = options || {};
     debugSensitive('client request. options: %j', options);
